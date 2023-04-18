@@ -4037,6 +4037,19 @@
             {
                 "children": [],
                 "depends_on": null,
+                "help": "LED GPIO on recieving messages.",
+                "id": "LED_GPIO_RECIEVE",
+                "name": "LED_GPIO_RECIEVE",
+                "range": [
+                    0,
+                    48
+                ],
+                "title": "LED GPIO RECIEVE number",
+                "type": "int"
+            },
+            {
+                "children": [],
+                "depends_on": null,
                 "help": "SSID (network name) for the example to connect to.",
                 "id": "ESP_WIFI_SSID",
                 "name": "ESP_WIFI_SSID",

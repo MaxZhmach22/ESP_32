@@ -7,6 +7,13 @@ config LED_GPIO
     default 2
     help
     LED GPIO.
+    
+config LED_GPIO_RECIEVE
+    int "LED GPIO RECIEVE number"
+    range 0 48
+    default 5
+    help
+    LED GPIO on recieving messages.
 
 config ESP_WIFI_SSID
     string "WiFi SSID"

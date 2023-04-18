@@ -2,6 +2,7 @@
 //-------------------------------------------------------------
 static const char *TAG = "udp";
 //-------------------------------------------------------------
+
 void udp_task(void *pvParameters)
 {
   TickType_t xLastWakeTime;
@@ -33,7 +34,10 @@ void udp_task(void *pvParameters)
   {
 	ESP_LOGI(TAG, "Current value is: %d", i);
     sendto(sockfd, &i, 2,  0, (struct sockaddr*) &servaddr,  sizeof(servaddr));
-    vTaskDelay(delay);
+    gpio_set_level(CONFIG_LED_GPIO_RECIEVE, 1);
+    vTaskDelay(delay/2);
+    gpio_set_level(CONFIG_LED_GPIO_RECIEVE, 0);
+    vTaskDelay(delay/2);
   }
   shutdown(sockfd, 0);
   close(sockfd);
