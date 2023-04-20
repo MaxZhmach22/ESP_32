@@ -3,27 +3,49 @@
 static const char *TAG = "udp";
 static const char *RTAG = "recv_udp";
 //-------------------------------------------------------------
+//void char[] decode(char buffer[]){
+//	int length = sizeof(buffer);
+//	char decoded_message[lenght+1];
+//	memset(decoded_message, 0, sizeof(decoded_message));
+//	for(int i = 0; i < lenght; i++){
+//
+//	}
+//	return decoded_message
+//}
+
 static void recv_task(void *pvParameters)
 {
 	ESP_LOGI(RTAG, "Start receiving...\n");
 	char buf[10] = {};
 	int *sock = (int*) pvParameters;
-	char str1[10];
+	char str1[11];
 	TickType_t delay = pdMS_TO_TICKS(500);
 	for(short i=0;;i++)
 	{
-		ESP_LOGI(RTAG, "Update...\n");
 		recv(*sock, buf, sizeof(buf), 0);
-		snprintf(str1, sizeof(str1), "%6d", *(short*)buf);
-		printf("%s", str1);
-		//if(strlen(str1) != 0){
-		//	gpio_set_level(CONFIG_LED_GPIO_RECIEVE, 1);
-		//	vTaskDelay(delay/2);
-		//	gpio_set_level(CONFIG_LED_GPIO_RECIEVE, 0);
-		//	vTaskDelay(delay/2);
-		//}else{
-		//	vTaskDelay(delay);
-		//}
+		//snprintf(str1, sizeof(str1), "%6d", *(short*)buf);
+		int length = sizeof(buf);
+		memset(str1, 0, sizeof(str1));
+		for(int i = 0; i < length; i++){
+			str1[i] = (char)buf[i];
+		}
+		str1[length] = '\0';
+		ESP_LOGI(RTAG, "Update...\n %s", str1);
+		char led_on[] = "led_on";
+		char led_off[] = "led_off";
+		char *match_on = strstr(str1, led_on);
+		char *match_off = strstr(str1, led_off);
+
+		if(match_on != NULL){
+			ESP_LOGI(RTAG, "LED ON");
+			gpio_set_level(CONFIG_LED_GPIO_RECIEVE, 1);
+		}
+		else if(match_off != NULL){
+			ESP_LOGI(RTAG, "LED OFF");
+			gpio_set_level(CONFIG_LED_GPIO_RECIEVE, 0);
+		}else{
+			vTaskDelay(delay);
+		}
 	}
 }
 
@@ -54,7 +76,7 @@ void udp_task(void *pvParameters)
   servaddr.sin_port = htons(CONFIG_SERVER_PORT);
   xTaskCreate(recv_task, "recv_task", 4096, (void*)&sockfd, 5, &xRecvTask);
   xLastWakeTime = xTaskGetTickCount();
-  const TickType_t xFrequency = 100 / portTICK_PERIOD_MS;
+  const TickType_t xFrequency = 1000 / portTICK_PERIOD_MS;
   TickType_t delay = pdMS_TO_TICKS(1000);
   char message[100];
   for(short i=0;;i++)
