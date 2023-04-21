@@ -52,5 +52,17 @@ config CLIENT_PORT
     default 4444
     help
         The local port.
+         
+config MOTOR_PWM_PIN
+    int "Motor PWM Pin"
+    default 21
+    help
+        GPIO pin number for the motor PWM signal
+
+config MOTOR_DIR_PIN
+    int "Motor Direction Pin"
+    default 22
+    help
+        GPIO pin number for the motor direction signal
 
 endmenu

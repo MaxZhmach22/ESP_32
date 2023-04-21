@@ -4112,6 +4112,26 @@
                 ],
                 "title": "Client Port",
                 "type": "int"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": "GPIO pin number for the motor PWM signal",
+                "id": "MOTOR_PWM_PIN",
+                "name": "MOTOR_PWM_PIN",
+                "range": null,
+                "title": "Motor PWM Pin",
+                "type": "int"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": "GPIO pin number for the motor direction signal",
+                "id": "MOTOR_DIR_PIN",
+                "name": "MOTOR_DIR_PIN",
+                "range": null,
+                "title": "Motor Direction Pin",
+                "type": "int"
             }
         ],
         "depends_on": null,

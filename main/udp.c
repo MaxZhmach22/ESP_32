@@ -1,17 +1,13 @@
 #include "udp.h"
+#include "sdkconfig.h"
+#include "driver/ledc.h"
 //-------------------------------------------------------------
 static const char *TAG = "udp";
 static const char *RTAG = "recv_udp";
 //-------------------------------------------------------------
-//void char[] decode(char buffer[]){
-//	int length = sizeof(buffer);
-//	char decoded_message[lenght+1];
-//	memset(decoded_message, 0, sizeof(decoded_message));
-//	for(int i = 0; i < lenght; i++){
-//
-//	}
-//	return decoded_message
-//}
+#define MOTOR_PWM_FREQ 1000
+#define MOTOR_PWM_RES  10
+//-------------------------------------------------------------
 
 static void recv_task(void *pvParameters)
 {
@@ -20,6 +16,28 @@ static void recv_task(void *pvParameters)
 	int *sock = (int*) pvParameters;
 	char str1[11];
 	TickType_t delay = pdMS_TO_TICKS(500);
+	//-engine
+	 int motor_pwm_pin = CONFIG_MOTOR_PWM_PIN;
+	 ledc_timer_config_t timer_conf = {
+	         .speed_mode = LEDC_HIGH_SPEED_MODE,
+	         .timer_num = LEDC_TIMER_0,
+	         .duty_resolution = MOTOR_PWM_RES,
+	         .freq_hz = MOTOR_PWM_FREQ
+	     };
+	     ledc_timer_config(&timer_conf);
+
+	 ledc_channel_config_t channel_conf = {
+	          .channel = LEDC_CHANNEL_0,
+	          .timer_sel = LEDC_TIMER_0,
+	          .gpio_num = motor_pwm_pin,
+	          .duty = (1 << MOTOR_PWM_RES) - 1,
+	          .speed_mode = LEDC_HIGH_SPEED_MODE,
+	          .hpoint = 0
+	     };
+	     ledc_channel_config(&channel_conf);
+
+	ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, 0);
+	ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
 	for(short i=0;;i++)
 	{
 		recv(*sock, buf, sizeof(buf), 0);
@@ -39,10 +57,14 @@ static void recv_task(void *pvParameters)
 		if(match_on != NULL){
 			ESP_LOGI(RTAG, "LED ON");
 			gpio_set_level(CONFIG_LED_GPIO_RECIEVE, 1);
+		    ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, (1 << MOTOR_PWM_RES) - 1);
+		    ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
 		}
 		else if(match_off != NULL){
 			ESP_LOGI(RTAG, "LED OFF");
 			gpio_set_level(CONFIG_LED_GPIO_RECIEVE, 0);
+			ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, 0);
+			ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
 		}else{
 			vTaskDelay(delay);
 		}
