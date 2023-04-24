@@ -15,7 +15,8 @@ static void recv_task(void *pvParameters)
 	char buf[10] = {};
 	int *sock = (int*) pvParameters;
 	char str1[11];
-	TickType_t delay = pdMS_TO_TICKS(500);
+	int previousNum = 0;
+	TickType_t delay = pdMS_TO_TICKS(100);
 	//-engine
 	 int motor_pwm_pin = CONFIG_MOTOR_PWM_PIN;
 	 ledc_timer_config_t timer_conf = {
@@ -48,25 +49,47 @@ static void recv_task(void *pvParameters)
 			str1[i] = (char)buf[i];
 		}
 		str1[length] = '\0';
-		ESP_LOGI(RTAG, "Update...\n %s", str1);
 		char led_on[] = "led_on";
 		char led_off[] = "led_off";
+		char engine_off[] = "engine_off";
 		char *match_on = strstr(str1, led_on);
 		char *match_off = strstr(str1, led_off);
+		char *match_e_off = strstr(str1, engine_off);
+		int num;
+		num = atoi(str1);
+		gpio_set_direction(CONFIG_MOTOR_DIR_PIN, GPIO_MODE_OUTPUT);
+		gpio_set_level(CONFIG_MOTOR_DIR_PIN, 0);
+
+		if(num != previousNum){
+			if(num < 0){
+				ESP_LOGI(RTAG, "Negative  %d", num);
+				gpio_set_level(CONFIG_MOTOR_DIR_PIN, 1);
+				ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, num);
+				ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
+			}
+			else{
+				ESP_LOGI(RTAG, "Positive %d", num);
+				gpio_set_level(CONFIG_MOTOR_DIR_PIN, 0);
+				ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, num);
+				ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
+			}
+		    previousNum = num;
+		}
+
+		if(match_e_off != NULL){
+			ESP_LOGI(RTAG, "Engine off %s", str1);
+			ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, 0);
+			ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
+			previousNum = 0;
+		}
 
 		if(match_on != NULL){
 			ESP_LOGI(RTAG, "LED ON");
 			gpio_set_level(CONFIG_LED_GPIO_RECIEVE, 1);
-		    ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, (1 << MOTOR_PWM_RES) - 1);
-		    ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
 		}
 		else if(match_off != NULL){
 			ESP_LOGI(RTAG, "LED OFF");
 			gpio_set_level(CONFIG_LED_GPIO_RECIEVE, 0);
-			ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, 0);
-			ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
-		}else{
-			vTaskDelay(delay);
 		}
 	}
 }
@@ -103,7 +126,7 @@ void udp_task(void *pvParameters)
   char message[100];
   for(short i=0;;i++)
   {
-	ESP_LOGI(TAG, "Current value is: %d", i);
+	//ESP_LOGI(TAG, "Current value is: %d", i);
     sendto(sockfd, &i, 2,  0, (struct sockaddr*) &servaddr,  sizeof(servaddr));
     vTaskDelayUntil(&xLastWakeTime, xFrequency)
   }
