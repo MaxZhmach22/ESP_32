@@ -6,6 +6,7 @@ static const char *TAG = "udp";
 static const char *RTAG = "recv_udp";
 //-------------------------------------------------------------
 #define MOTOR_PWM_FREQ 1000
+#define MOTOR_RPWM_FREQ 1000
 #define MOTOR_PWM_RES  10
 //-------------------------------------------------------------
 
@@ -37,8 +38,29 @@ static void recv_task(void *pvParameters)
 	     };
 	     ledc_channel_config(&channel_conf);
 
+	 int motor_rpmw_pin = CONFIG_MOTOR_RPWM_PIN;
+	 ledc_timer_config_t timer_confr = {
+	     	    .speed_mode = LEDC_HIGH_SPEED_MODE,
+	     	    .timer_num = LEDC_TIMER_1,
+	     	    .duty_resolution = MOTOR_PWM_RES,
+	     	    .freq_hz = MOTOR_RPWM_FREQ
+	     };
+	     ledc_timer_config(&timer_confr);
+
+	 ledc_channel_config_t channel_confr = {
+	     	     .channel = LEDC_CHANNEL_1,
+	     	     .timer_sel = LEDC_TIMER_1,
+	     	     .gpio_num = motor_rpmw_pin,
+	     	     .duty = (1 << MOTOR_PWM_RES) - 1,
+	     	     .speed_mode = LEDC_HIGH_SPEED_MODE,
+	     	     .hpoint = 0
+	     };
+	     ledc_channel_config(&channel_confr);
+
 	ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, 0);
 	ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
+	ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_1, 0);
+	ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_1);
 	for(short i=0;;i++)
 	{
 		recv(*sock, buf, sizeof(buf), 0);
@@ -59,6 +81,8 @@ static void recv_task(void *pvParameters)
 		num = atoi(str1);
 		gpio_set_direction(CONFIG_MOTOR_DIR_PIN, GPIO_MODE_OUTPUT);
 		gpio_set_level(CONFIG_MOTOR_DIR_PIN, 0);
+		gpio_set_direction(CONFIG_MOTOR_RDIR_PIN, GPIO_MODE_OUTPUT);
+		gpio_set_level(CONFIG_MOTOR_RDIR_PIN, 0);
 
 		if(num != previousNum){
 			if(num < 0){
@@ -66,12 +90,18 @@ static void recv_task(void *pvParameters)
 				gpio_set_level(CONFIG_MOTOR_DIR_PIN, 1);
 				ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, num);
 				ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
+				gpio_set_level(CONFIG_MOTOR_RDIR_PIN, 1);
+				ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_1, num);
+				ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_1);
 			}
 			else{
 				ESP_LOGI(RTAG, "Positive %d", num);
 				gpio_set_level(CONFIG_MOTOR_DIR_PIN, 0);
 				ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, num);
 				ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
+				gpio_set_level(CONFIG_MOTOR_RDIR_PIN, 0);
+				ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_1, num);
+				ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_1);
 			}
 		    previousNum = num;
 		}

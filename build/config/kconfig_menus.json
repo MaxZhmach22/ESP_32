@@ -4132,6 +4132,26 @@
                 "range": null,
                 "title": "Motor Direction Pin",
                 "type": "int"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": "GPIO pin number for the motor rotation PMW signal",
+                "id": "MOTOR_RPWM_PIN",
+                "name": "MOTOR_RPWM_PIN",
+                "range": null,
+                "title": "Motor RPWM Pin",
+                "type": "int"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": "GPIO pin number for the motor rotation signal",
+                "id": "MOTOR_RDIR_PIN",
+                "name": "MOTOR_RDIR_PIN",
+                "range": null,
+                "title": "Motor Rotation Pin",
+                "type": "int"
             }
         ],
         "depends_on": null,

@@ -614,6 +614,8 @@
     "MMU_PAGE_SIZE_64KB": true,
     "MOTOR_DIR_PIN": 22,
     "MOTOR_PWM_PIN": 21,
+    "MOTOR_RDIR_PIN": 13,
+    "MOTOR_RPWM_PIN": 12,
     "MQTT_CUSTOM_OUTBOX": false,
     "MQTT_MSG_ID_INCREMENTAL": false,
     "MQTT_PROTOCOL_311": true,

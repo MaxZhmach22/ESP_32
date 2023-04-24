@@ -64,5 +64,16 @@ config MOTOR_DIR_PIN
     default 22
     help
         GPIO pin number for the motor direction signal
+        
+config MOTOR_RPWM_PIN
+    int "Motor RPWM Pin"
+    default 12
+    help
+        GPIO pin number for the motor rotation PMW signal
 
+config MOTOR_RDIR_PIN
+    int "Motor Rotation Pin"
+    default 13
+    help
+        GPIO pin number for the motor rotation signal
 endmenu
